@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUMINA — Identity</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .brand { font-family: 'Space Grotesk', sans-serif; }
+    body {
+      background: #050510;
+      overflow-x: hidden;
+    }
+    .blob {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      opacity: 0.35;
+      z-index: -1;
+      animation: float 12s ease-in-out infinite;
+    }
+    .blob-1 { width: 500px; height: 500px; background: #7c3aed; top: -150px; left: -150px; }
+    .blob-2 { width: 450px; height: 450px; background: #06b6d4; bottom: -100px; right: -100px; animation-delay: -4s; }
+    .blob-3 { width: 350px; height: 350px; background: #ec4899; top: 40%; left: 60%; animation-delay: -8s; }
+    @keyframes float {
+      0%, 100% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(40px, -40px) scale(1.1); }
+    }
+    .glass {
+      background: rgba(255, 255, 255, 0.04);
+      backdrop-filter: blur(24px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .gradient-text {
+      background: linear-gradient(135deg, #a78bfa 0%, #22d3ee 50%, #f472b6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #7c3aed, #06b6d4);
+      transition: all 0.3s ease;
+    }
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 40px rgba(124, 58, 237, 0.5);
+    }
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .mono { font-family: 'Space Grotesk', monospace; letter-spacing: 2px; }
+    input:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15); }
+  </style>
+</head>
+<body class="min-h-screen flex items-center justify-center px-4 text-white">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="w-full max-w-lg fade-in">
+    <!-- Brand -->
+    <div class="text-center mb-10">
+      <h1 class="text-5xl md:text-6xl font-bold brand gradient-text tracking-tight">LUMINA</h1>
+      <p class="text-white/40 text-sm mt-2 tracking-[6px] uppercase">Created by Devil Developers</p>
+    </div>
+
+    <!-- Card -->
+    <div class="glass rounded-3xl p-8 md:p-10 shadow-2xl">
+      <h2 class="text-2xl font-semibold brand mb-1">Add Your Identity</h2>
+      <p class="text-white/40 text-sm mb-8">Enter your name to receive a unique ID.</p>
+
+      <div id="form-area">
+        <label class="block text-xs text-white/50 uppercase tracking-widest mb-2">Your Name</label>
+        <input
+          id="name-input"
+          type="text"
+          placeholder="e.g. Aryan Sharma"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 transition"
+        />
+        <button
+          onclick="handleSubmit()"
+          class="btn-primary w-full mt-6 py-3.5 rounded-xl font-semibold text-sm tracking-wide"
+        >
+          Generate My ID →
+        </button>
+      </div>
+
+      <div id="result-area" class="hidden text-center">
+        <p class="text-white/40 text-xs uppercase tracking-widest mb-3">Your Identity</p>
+        <div class="glass rounded-2xl py-6 px-4 mb-4">
+          <p id="display-name" class="text-white/60 text-sm mb-1"></p>
+          <p id="display-id" class="mono text-3xl md:text-4xl font-bold gradient-text"></p>
+        </div>
+        <p class="text-emerald-400 text-sm flex items-center justify-center gap-2">
+          <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+          Registered successfully
+        </p>
+        <button onclick="resetForm()" class="mt-6 text-white/30 text-xs underline hover:text-white/60">Register another</button>
+      </div>
+
+      <div id="error-area" class="hidden mt-4 text-red-400 text-sm text-center"></div>
+    </div>
+
+    <p class="text-center text-white/20 text-xs mt-8">Your data is securely stored via GitHub Issues.</p>
+  </div>
+
+  <script src="config.js"></script>
+  <script>
+    const REPO = CONFIG.repo;
+    const TOKEN = CONFIG.token;
+
+    let isProcessing = false;
+
+    async function fetchExistingData() {
+      try {
+        const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/data.json?t=${Date.now()}`);
+        if (!res.ok) return [];
+        return await res.json();
+      } catch {
+        return [];
+      }
+    }
+
+    async function generateId(name) {
+      const data = await fetchExistingData();
+      const existing = data.find(d => d.name.toLowerCase() === name.toLowerCase());
+      if (existing) return { id: existing.id, isNew: false };
+
+      let max = 0;
+      data.forEach(d => {
+        const num = parseInt(d.id.split('-')[1]);
+        if (num > max) max = num;
+      });
+      const next = max + 1;
+      return { id: `MT-${String(next).padStart(6, '0')}`, isNew: true };
+    }
+
+    async function createIssue(title, body) {
+      const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `token ${TOKEN}`,
+          'Accept': 'application/vnd.github.v3+json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ title, body })
+      });
+      if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
+      return res.json();
+    }
+
+    async function handleSubmit() {
+      if (isProcessing) return;
+      const name = document.getElementById('name-input').value.trim();
+      const errorEl = document.getElementById('error-area');
+      errorEl.classList.add('hidden');
+
+      if (name.length < 2) {
+        errorEl.textContent = 'Please enter a valid name (at least 2 characters).';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+      if (!/^[a-zA-Z\s.'-]+$/.test(name)) {
+        errorEl.textContent = 'Name can only contain letters, spaces, and basic punctuation.';
+        errorEl.classList.remove('hidden');
+        return;
+      }
+
+      isProcessing = true;
+      const btn = document.querySelector('#form-area button');
+      btn.textContent = 'Generating...';
+      btn.disabled = true;
+
+      try {
+        const { id, isNew } = await generateId(name);
+
+        if (isNew) {
+          const body = `### Identity Registration\n- **Name:** ${name}\n- **ID:** ${id}\n- **Timestamp:** ${new Date().toISOString()}`;
+          await createIssue(`[IDENTITY] ${name}`, body);
+        }
+
+        document.getElementById('form-area').classList.add('hidden');
+        document.getElementById('result-area').classList.remove('hidden');
+        document.getElementById('display-name').textContent = name;
+        document.getElementById('display-id').textContent = id;
+      } catch (e) {
+        errorEl.textContent = 'Something went wrong. Please try again.';
+        errorEl.classList.remove('hidden');
+        console.error(e);
+      } finally {
+        isProcessing = false;
+        btn.textContent = 'Generate My ID →';
+        btn.disabled = false;
+      }
+    }
+
+    function resetForm() {
+      document.getElementById('result-area').classList.add('hidden');
+      document.getElementById('form-area').classList.remove('hidden');
+      document.getElementById('name-input').value = '';
+    }
+  </script>
+</body>
+</html>
