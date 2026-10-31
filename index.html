@@ -14,7 +14,7 @@
     .blob-1 { width: 500px; height: 500px; background: #7c3aed; top: -150px; left: -150px; }
     .blob-2 { width: 450px; height: 450px; background: #06b6d4; bottom: -100px; right: -100px; animation-delay: -4s; }
     .blob-3 { width: 350px; height: 350px; background: #ec4899; top: 40%; left: 60%; animation-delay: -8s; }
-    @keyframes float { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-40px) scale(1.1); } }
+    @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-40px) scale(1.1); } }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
     .gradient-text { background: linear-gradient(135deg, #a78bfa, #22d3ee, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .btn-primary { background: linear-gradient(135deg, #7c3aed, #06b6d4); transition: all 0.3s; }
@@ -24,7 +24,7 @@
     .mono { font-family: 'Space Grotesk', monospace; letter-spacing: 2px; }
     input:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.15); }
     .pulse-dot { animation: pulse 1.5s ease-in-out infinite; }
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.3; } }
   </style>
 </head>
 <body class="min-h-screen flex items-center justify-center px-4 py-10 text-white">
@@ -39,7 +39,6 @@
     </div>
 
     <div class="glass rounded-3xl p-8 md:p-10 shadow-2xl">
-      <!-- Step 1 -->
       <div id="step-form">
         <h2 class="text-2xl font-semibold brand mb-1">Add Your Identity</h2>
         <p class="text-white/40 text-sm mb-8">Enter your name to receive a unique ID.</p>
@@ -54,7 +53,6 @@
         <div id="error-area" class="hidden mt-4 text-red-400 text-sm text-center"></div>
       </div>
 
-      <!-- Step 2: Confirm on GitHub -->
       <div id="step-confirm" class="hidden text-center">
         <p class="text-white/40 text-xs uppercase tracking-widest mb-3">Your Assigned ID</p>
         <div class="glass rounded-2xl py-6 px-4 mb-5">
@@ -75,7 +73,6 @@
         <button onclick="resetForm()" class="mt-6 text-white/30 text-xs underline hover:text-white/60">← Start over</button>
       </div>
 
-      <!-- Step 3: Done -->
       <div id="step-done" class="hidden text-center">
         <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
           <span class="text-3xl">✓</span>
@@ -99,6 +96,10 @@
   <script>
     const REPO = 'NEXURA-M/LUMINA';
     const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/main`;
+
+    function b64Encode(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
 
     let currentName = '';
     let proposedId = '';
@@ -126,7 +127,7 @@
 
       const name = document.getElementById('name-input').value.trim();
       if (name.length < 2) return showError('Enter a valid name (at least 2 characters).');
-      if (!/^[a-zA-Z\s.'-]{2,50}$/.test(name)) return showError('Only letters, spaces, and . \' - are allowed.');
+      if (!/^[a-zA-Z\s.'-]{2,50}$/.test(name)) return showError("Only letters, spaces, and . ' - are allowed.");
 
       isProcessing = true;
       const btn = document.getElementById('main-btn');
@@ -146,7 +147,6 @@
           return;
         }
 
-        // Compute proposed ID from existing data
         let max = 0;
         data.forEach(d => {
           const n = parseInt(d.id.split('-')[1]);
@@ -169,17 +169,19 @@
       }
     }
 
+    // 🎯 Same btoa technique as pasted file
     function confirmOnGitHub() {
+      const payload = {
+        kind: 'identity',
+        name: currentName,
+        proposedId: proposedId,
+        timestamp: new Date().toISOString()
+      };
+      const encodedBody = b64Encode(JSON.stringify(payload));
       const title = encodeURIComponent(`[IDENTITY] ${currentName}`);
-      const body = encodeURIComponent(
-        `### Identity Registration\n\n` +
-        `- **Name:** ${currentName}\n` +
-        `- **Proposed ID:** ${proposedId}\n` +
-        `- **Timestamp:** ${new Date().toISOString()}`
-      );
-      const url = `https://github.com/${REPO}/issues/new?title=${title}&body=${body}`;
-      window.open(url, '_blank');
+      const url = `https://github.com/${REPO}/issues/new?title=${title}&body=${encodeURIComponent(encodedBody)}`;
 
+      window.open(url, '_blank');
       document.getElementById('status-text').textContent = 'Waiting for GitHub submission...';
       document.getElementById('confirm-btn').textContent = 'Open GitHub again';
       startPolling();
