@@ -9,184 +9,158 @@
   <style>
     * { font-family: 'Inter', sans-serif; }
     h1, h2, h3, .brand { font-family: 'Space Grotesk', sans-serif; }
-    body {
-      background: #050510;
-      overflow-x: hidden;
-    }
-    .blob {
-      position: fixed;
-      border-radius: 50%;
-      filter: blur(120px);
-      opacity: 0.35;
-      z-index: -1;
-      animation: float 12s ease-in-out infinite;
-    }
+    body { background: #050510; overflow-x: hidden; }
+    .blob { position: fixed; border-radius: 50%; filter: blur(120px); opacity: 0.35; z-index: -1; animation: float 12s ease-in-out infinite; }
     .blob-1 { width: 500px; height: 500px; background: #7c3aed; top: -150px; left: -150px; }
     .blob-2 { width: 450px; height: 450px; background: #06b6d4; bottom: -100px; right: -100px; animation-delay: -4s; }
     .blob-3 { width: 350px; height: 350px; background: #ec4899; top: 40%; left: 60%; animation-delay: -8s; }
-    @keyframes float {
-      0%, 100% { transform: translate(0, 0) scale(1); }
-      50% { transform: translate(40px, -40px) scale(1.1); }
-    }
-    .glass {
-      background: rgba(255, 255, 255, 0.04);
-      backdrop-filter: blur(24px);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-    .gradient-text {
-      background: linear-gradient(135deg, #a78bfa 0%, #22d3ee 50%, #f472b6 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, #7c3aed, #06b6d4);
-      transition: all 0.3s ease;
-    }
-    .btn-primary:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 12px 40px rgba(124, 58, 237, 0.5);
-    }
+    @keyframes float { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-40px) scale(1.1); } }
+    .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
+    .gradient-text { background: linear-gradient(135deg, #a78bfa, #22d3ee, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .btn-primary { background: linear-gradient(135deg, #7c3aed, #06b6d4); transition: all 0.3s; }
+    .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(124,58,237,0.5); }
     .fade-in { animation: fadeIn 0.6s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
     .mono { font-family: 'Space Grotesk', monospace; letter-spacing: 2px; }
-    input:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34, 211, 238, 0.15); }
+    input:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.15); }
+    .pulse-dot { animation: pulse 1.5s ease-in-out infinite; }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
   </style>
 </head>
-<body class="min-h-screen flex items-center justify-center px-4 text-white">
+<body class="min-h-screen flex items-center justify-center px-4 py-10 text-white">
   <div class="blob blob-1"></div>
   <div class="blob blob-2"></div>
   <div class="blob blob-3"></div>
 
   <div class="w-full max-w-lg fade-in">
-    <!-- Brand -->
     <div class="text-center mb-10">
       <h1 class="text-5xl md:text-6xl font-bold brand gradient-text tracking-tight">LUMINA</h1>
       <p class="text-white/40 text-sm mt-2 tracking-[6px] uppercase">Created by Devil Developers</p>
     </div>
 
-    <!-- Card -->
     <div class="glass rounded-3xl p-8 md:p-10 shadow-2xl">
-      <h2 class="text-2xl font-semibold brand mb-1">Add Your Identity</h2>
-      <p class="text-white/40 text-sm mb-8">Enter your name to receive a unique ID.</p>
+      <!-- Step 1 -->
+      <div id="step-form">
+        <h2 class="text-2xl font-semibold brand mb-1">Add Your Identity</h2>
+        <p class="text-white/40 text-sm mb-8">Enter your name to receive a unique ID.</p>
 
-      <div id="form-area">
         <label class="block text-xs text-white/50 uppercase tracking-widest mb-2">Your Name</label>
-        <input
-          id="name-input"
-          type="text"
-          placeholder="e.g. Aryan Sharma"
-          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 transition"
-        />
-        <button
-          onclick="handleSubmit()"
-          class="btn-primary w-full mt-6 py-3.5 rounded-xl font-semibold text-sm tracking-wide"
-        >
+        <input id="name-input" type="text" placeholder="e.g. Aryan Sharma"
+          class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 transition" />
+        <button onclick="handleSubmit()" id="main-btn"
+          class="btn-primary w-full mt-6 py-3.5 rounded-xl font-semibold text-sm tracking-wide">
           Generate My ID →
         </button>
+        <div id="error-area" class="hidden mt-4 text-red-400 text-sm text-center"></div>
       </div>
 
-      <div id="result-area" class="hidden text-center">
-        <p class="text-white/40 text-xs uppercase tracking-widest mb-3">Your Identity</p>
-        <div class="glass rounded-2xl py-6 px-4 mb-4">
+      <!-- Step 2: Confirm on GitHub -->
+      <div id="step-confirm" class="hidden text-center">
+        <p class="text-white/40 text-xs uppercase tracking-widest mb-3">Your Assigned ID</p>
+        <div class="glass rounded-2xl py-6 px-4 mb-5">
           <p id="display-name" class="text-white/60 text-sm mb-1"></p>
           <p id="display-id" class="mono text-3xl md:text-4xl font-bold gradient-text"></p>
         </div>
-        <p class="text-emerald-400 text-sm flex items-center justify-center gap-2">
-          <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
-          Registered successfully
+        <p class="text-amber-300 text-sm mb-5 flex items-center justify-center gap-2">
+          <span class="pulse-dot w-2 h-2 bg-amber-300 rounded-full inline-block"></span>
+          <span id="status-text">Pending confirmation on GitHub</span>
         </p>
-        <button onclick="resetForm()" class="mt-6 text-white/30 text-xs underline hover:text-white/60">Register another</button>
+        <button onclick="confirmOnGitHub()" id="confirm-btn"
+          class="btn-primary w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide">
+          Confirm on GitHub →
+        </button>
+        <p class="text-white/30 text-xs mt-4 leading-relaxed">
+          You'll be taken to GitHub.<br/>Click the green <b class="text-emerald-400">"Submit new issue"</b> button to complete registration.
+        </p>
+        <button onclick="resetForm()" class="mt-6 text-white/30 text-xs underline hover:text-white/60">← Start over</button>
       </div>
 
-      <div id="error-area" class="hidden mt-4 text-red-400 text-sm text-center"></div>
+      <!-- Step 3: Done -->
+      <div id="step-done" class="hidden text-center">
+        <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
+          <span class="text-3xl">✓</span>
+        </div>
+        <h3 class="text-xl font-semibold brand mb-2">Identity Registered</h3>
+        <div class="glass rounded-2xl py-5 px-4 my-5">
+          <p id="done-name" class="text-white/60 text-sm mb-1"></p>
+          <p id="done-id" class="mono text-3xl font-bold gradient-text"></p>
+        </div>
+        <p class="text-white/40 text-xs mb-5">Your ID is live in LUMINA's registry.</p>
+        <button onclick="resetForm()" class="text-white/30 text-xs underline hover:text-white/60">Register another</button>
+      </div>
     </div>
 
-    <p class="text-center text-white/20 text-xs mt-8">Your data is securely stored via GitHub Issues.</p>
+    <p class="text-center text-white/20 text-xs mt-8">
+      Need a GitHub account? It's free —
+      <a href="https://github.com/signup" target="_blank" class="underline hover:text-white/40">sign up here</a>.
+    </p>
   </div>
 
-  <script src="config.js"></script>
   <script>
-    const REPO = CONFIG.repo;
-    const TOKEN = CONFIG.token;
+    const REPO = 'NEXURA-M/LUMINA';
+    const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/main`;
 
+    let currentName = '';
+    let proposedId = '';
+    let pollInterval = null;
     let isProcessing = false;
 
-    async function fetchExistingData() {
+    async function fetchData() {
       try {
-        const res = await fetch(`https://raw.githubusercontent.com/${REPO}/main/data.json?t=${Date.now()}`);
+        const res = await fetch(`${RAW_BASE}/data.json?cb=${Date.now()}`, { cache: 'no-store' });
         if (!res.ok) return [];
         return await res.json();
-      } catch {
-        return [];
-      }
+      } catch { return []; }
     }
 
-    async function generateId(name) {
-      const data = await fetchExistingData();
-      const existing = data.find(d => d.name.toLowerCase() === name.toLowerCase());
-      if (existing) return { id: existing.id, isNew: false };
-
-      let max = 0;
-      data.forEach(d => {
-        const num = parseInt(d.id.split('-')[1]);
-        if (num > max) max = num;
+    function showStep(id) {
+      ['step-form', 'step-confirm', 'step-done'].forEach(s => {
+        document.getElementById(s).classList.toggle('hidden', s !== id);
       });
-      const next = max + 1;
-      return { id: `MT-${String(next).padStart(6, '0')}`, isNew: true };
-    }
-
-    async function createIssue(title, body) {
-      const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ title, body })
-      });
-      if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-      return res.json();
     }
 
     async function handleSubmit() {
       if (isProcessing) return;
-      const name = document.getElementById('name-input').value.trim();
       const errorEl = document.getElementById('error-area');
       errorEl.classList.add('hidden');
 
-      if (name.length < 2) {
-        errorEl.textContent = 'Please enter a valid name (at least 2 characters).';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      if (!/^[a-zA-Z\s.'-]+$/.test(name)) {
-        errorEl.textContent = 'Name can only contain letters, spaces, and basic punctuation.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
+      const name = document.getElementById('name-input').value.trim();
+      if (name.length < 2) return showError('Enter a valid name (at least 2 characters).');
+      if (!/^[a-zA-Z\s.'-]{2,50}$/.test(name)) return showError('Only letters, spaces, and . \' - are allowed.');
 
       isProcessing = true;
-      const btn = document.querySelector('#form-area button');
-      btn.textContent = 'Generating...';
+      const btn = document.getElementById('main-btn');
+      btn.textContent = 'Checking registry...';
       btn.disabled = true;
 
       try {
-        const { id, isNew } = await generateId(name);
+        const data = await fetchData();
+        const existing = data.find(d => d.name.toLowerCase() === name.toLowerCase());
 
-        if (isNew) {
-          const body = `### Identity Registration\n- **Name:** ${name}\n- **ID:** ${id}\n- **Timestamp:** ${new Date().toISOString()}`;
-          await createIssue(`[IDENTITY] ${name}`, body);
+        if (existing) {
+          currentName = existing.name;
+          proposedId = existing.id;
+          document.getElementById('done-name').textContent = existing.name;
+          document.getElementById('done-id').textContent = existing.id;
+          showStep('step-done');
+          return;
         }
 
-        document.getElementById('form-area').classList.add('hidden');
-        document.getElementById('result-area').classList.remove('hidden');
+        // Compute proposed ID from existing data
+        let max = 0;
+        data.forEach(d => {
+          const n = parseInt(d.id.split('-')[1]);
+          if (!isNaN(n) && n > max) max = n;
+        });
+        proposedId = `MT-${String(max + 1).padStart(6, '0')}`;
+        currentName = name;
+
         document.getElementById('display-name').textContent = name;
-        document.getElementById('display-id').textContent = id;
+        document.getElementById('display-id').textContent = proposedId;
+        document.getElementById('status-text').textContent = 'Pending confirmation on GitHub';
+        showStep('step-confirm');
       } catch (e) {
-        errorEl.textContent = 'Something went wrong. Please try again.';
-        errorEl.classList.remove('hidden');
+        showError('Could not reach the registry. Please try again.');
         console.error(e);
       } finally {
         isProcessing = false;
@@ -195,10 +169,56 @@
       }
     }
 
+    function confirmOnGitHub() {
+      const title = encodeURIComponent(`[IDENTITY] ${currentName}`);
+      const body = encodeURIComponent(
+        `### Identity Registration\n\n` +
+        `- **Name:** ${currentName}\n` +
+        `- **Proposed ID:** ${proposedId}\n` +
+        `- **Timestamp:** ${new Date().toISOString()}`
+      );
+      const url = `https://github.com/${REPO}/issues/new?title=${title}&body=${body}`;
+      window.open(url, '_blank');
+
+      document.getElementById('status-text').textContent = 'Waiting for GitHub submission...';
+      document.getElementById('confirm-btn').textContent = 'Open GitHub again';
+      startPolling();
+    }
+
+    function startPolling() {
+      if (pollInterval) clearInterval(pollInterval);
+      let attempts = 0;
+      pollInterval = setInterval(async () => {
+        attempts++;
+        const data = await fetchData();
+        const found = data.find(d => d.name.toLowerCase() === currentName.toLowerCase());
+
+        if (found) {
+          clearInterval(pollInterval);
+          document.getElementById('status-text').textContent = 'Confirmed!';
+          document.getElementById('done-name').textContent = found.name;
+          document.getElementById('done-id').textContent = found.id;
+          showStep('step-done');
+        } else if (attempts >= 24) {
+          clearInterval(pollInterval);
+          document.getElementById('status-text').textContent = 'Still processing — refresh in 1–2 min';
+        }
+      }, 5000);
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-area');
+      el.textContent = msg;
+      el.classList.remove('hidden');
+    }
+
     function resetForm() {
-      document.getElementById('result-area').classList.add('hidden');
-      document.getElementById('form-area').classList.remove('hidden');
+      if (pollInterval) clearInterval(pollInterval);
+      currentName = ''; proposedId = '';
       document.getElementById('name-input').value = '';
+      document.getElementById('error-area').classList.add('hidden');
+      document.getElementById('confirm-btn').textContent = 'Confirm on GitHub →';
+      showStep('step-form');
     }
   </script>
 </body>
