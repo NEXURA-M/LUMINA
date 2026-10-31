@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>LUMINA — Dashboard</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    * { font-family: 'Inter', sans-serif; }
+    h1, h2, h3, .brand { font-family: 'Space Grotesk', sans-serif; }
+    body { background: #050510; overflow-x: hidden; }
+    .blob { position: fixed; border-radius: 50%; filter: blur(140px); opacity: 0.3; z-index: -1; animation: float 15s ease-in-out infinite; }
+    .blob-1 { width: 550px; height: 550px; background: #7c3aed; top: -180px; left: -150px; }
+    .blob-2 { width: 450px; height: 450px; background: #06b6d4; bottom: -120px; right: -120px; animation-delay: -5s; }
+    .blob-3 { width: 350px; height: 350px; background: #ec4899; top: 45%; left: 55%; animation-delay: -9s; opacity: 0.2; }
+    @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(40px,-40px) scale(1.1); } }
+    .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
+    .gradient-text { background: linear-gradient(135deg, #a78bfa, #22d3ee, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+    .mono { font-family: 'Space Grotesk', monospace; letter-spacing: 1px; }
+    .row-hover { transition: all 0.2s ease; }
+    .row-hover:hover { background: rgba(255,255,255,0.06); transform: translateX(3px); }
+    input:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.15); }
+    .fade-in { animation: fadeIn 0.6s ease-out; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+    .skeleton { background: linear-gradient(90deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.03) 100%); background-size: 200% 100%; animation: shimmer 1.5s infinite; }
+    @keyframes shimmer { 0% { background-position: 200% 0; } 100% { background-position: -200% 0; } }
+    .empty-state { opacity: 0.5; }
+    .badge { font-size: 10px; padding: 2px 8px; border-radius: 999px; letter-spacing: 0.5px; text-transform: uppercase; font-weight: 600; }
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); border-radius: 3px; }
+    ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.6); }
+    .tab-btn { transition: all 0.2s; }
+    .tab-btn.active { background: linear-gradient(135deg, #7c3aed, #06b6d4); box-shadow: 0 4px 20px rgba(124,58,237,0.4); }
+    .refresh-btn { transition: all 0.3s; }
+    .refresh-btn:hover { transform: rotate(180deg); }
+    .refresh-btn.spinning { animation: spin 1s linear infinite; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body class="min-h-screen text-white px-4 md:px-8 py-8">
+  <div class="blob blob-1"></div>
+  <div class="blob blob-2"></div>
+  <div class="blob blob-3"></div>
+
+  <div class="max-w-6xl mx-auto fade-in">
+    <!-- Header -->
+    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div>
+        <h1 class="text-4xl md:text-5xl font-bold brand gradient-text tracking-tight">LUMINA</h1>
+        <p class="text-white/40 text-xs mt-1 tracking-[4px] uppercase">Registry Dashboard</p>
+      </div>
+      <div class="flex items-center gap-3">
+        <a href="index.html" class="glass rounded-xl px-4 py-2.5 text-sm text-white/70 hover:text-white transition">+ Register</a>
+        <a href="win.html" class="glass rounded-xl px-4 py-2.5 text-sm text-white/70 hover:text-white transition">+ Inquiry</a>
+        <button onclick="loadAll()" id="refresh-btn" class="glass rounded-xl p-2.5 text-white/70 hover:text-white transition refresh-btn" title="Refresh">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+      <div class="glass rounded-2xl p-5">
+        <p class="text-white/40 text-xs uppercase tracking-widest">Total Users</p>
+        <p id="stat-users" class="text-3xl font-bold brand gradient-text mt-1">—</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-white/40 text-xs uppercase tracking-widest">Inquiries</p>
+        <p id="stat-inquiries" class="text-3xl font-bold brand gradient-text mt-1">—</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-white/40 text-xs uppercase tracking-widest">Last Sync</p>
+        <p id="stat-sync" class="text-sm font-medium mt-2 text-white/70">—</p>
+      </div>
+      <div class="glass rounded-2xl p-5">
+        <p class="text-white/40 text-xs uppercase tracking-widest">Status</p>
+        <p id="stat-status" class="text-sm font-medium mt-2 flex items-center gap-2">
+          <span class="w-2 h-2 bg-emerald-400 rounded-full animate-pulse"></span>
+          <span class="text-emerald-400">Live</span>
+        </p>
+      </div>
+    </div>
+
+    <!-- Tabs + Search -->
+    <div class="flex flex-col md:flex-row gap-3 mb-6">
+      <div class="flex gap-2">
+        <button onclick="switchTab('users')" id="tab-users" class="tab-btn active px-5 py-2.5 rounded-xl text-sm font-semibold">
+          👥 Users
+        </button>
+        <button onclick="switchTab('inquiries')" id="tab-inquiries" class="tab-btn glass px-5 py-2.5 rounded-xl text-sm font-semibold text-white/70">
+          📩 Inquiries
+        </button>
+      </div>
+      <div class="flex-1"></div>
+      <input id="search-input" oninput="renderAll()" type="text" placeholder="Search name, ID, WhatsApp..."
+        class="glass rounded-xl px-4 py-2.5 text-sm text-white placeholder-white/30 w-full md:w-72 transition" />
+    </div>
+
+    <!-- Users Panel -->
+    <div id="panel-users" class="glass rounded-3xl overflow-hidden">
+      <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+        <h2 class="text-lg font-semibold brand">Registered Users</h2>
+        <span id="users-count-badge" class="text-xs text-white/40 mono">0 entries</span>
+      </div>
+      <div id="users-list" class="divide-y divide-white/5 max-h-[600px] overflow-y-auto">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <!-- Inquiries Panel -->
+    <div id="panel-inquiries" class="glass rounded-3xl overflow-hidden hidden">
+      <div class="px-6 py-4 border-b border-white/5 flex items-center justify-between">
+        <h2 class="text-lg font-semibold brand">Project Inquiries</h2>
+        <span id="inquiries-count-badge" class="text-xs text-white/40 mono">0 entries</span>
+      </div>
+      <div id="inquiries-list" class="divide-y divide-white/5 max-h-[600px] overflow-y-auto">
+        <!-- Populated by JS -->
+      </div>
+    </div>
+
+    <p class="text-center text-white/20 text-xs mt-10">
+      Data auto-syncs from GitHub Issues · <a href="https://github.com/NEXURA-M/LUMINA" target="_blank" class="underline hover:text-white/40">NEXURA-M/LUMINA</a>
+    </p>
+  </div>
+
+  <script>
+    const REPO = 'NEXURA-M/LUMINA';
+    const RAW_BASE = `https://raw.githubusercontent.com/${REPO}/main`;
+
+    let allUsers = [];
+    let allInquiries = [];
+    let currentTab = 'users';
+
+    // ─── Load Data ───
+    async function loadJson(path) {
+      try {
+        const res = await fetch(`${RAW_BASE}/${path}?cb=${Date.now()}`, { cache: 'no-store' });
+        if (!res.ok) return [];
+        return await res.json();
+      } catch (e) {
+        console.error(`Failed to load ${path}`, e);
+        return [];
+      }
+    }
+
+    async function loadAll() {
+      const btn = document.getElementById('refresh-btn');
+      btn.classList.add('spinning');
+
+      // Skeleton states
+      document.getElementById('stat-users').textContent = '…';
+      document.getElementById('stat-inquiries').textContent = '…';
+      document.getElementById('users-list').innerHTML = skeletonRows();
+      document.getElementById('inquiries-list').innerHTML = skeletonRows();
+
+      const [users, inquiries] = await Promise.all([
+        loadJson('data.json'),
+        loadJson('dw.json')
+      ]);
+
+      allUsers = Array.isArray(users) ? users : [];
+      allInquiries = Array.isArray(inquiries) ? inquiries : [];
+
+      document.getElementById('stat-users').textContent = allUsers.length;
+      document.getElementById('stat-inquiries').textContent = allInquiries.length;
+      document.getElementById('stat-sync').textContent = new Date().toLocaleTimeString();
+
+      renderAll();
+      btn.classList.remove('spinning');
+    }
+
+    function skeletonRows() {
+      return Array(4).fill(0).map(() => `
+        <div class="px-6 py-4">
+          <div class="skeleton h-4 w-1/3 rounded mb-2"></div>
+          <div class="skeleton h-3 w-1/4 rounded"></div>
+        </div>
+      `).join('');
+    }
+
+    // ─── Tabs ───
+    function switchTab(tab) {
+      currentTab = tab;
+      document.getElementById('panel-users').classList.toggle('hidden', tab !== 'users');
+      document.getElementById('panel-inquiries').classList.toggle('hidden', tab !== 'inquiries');
+
+      const usersTab = document.getElementById('tab-users');
+      const inquiriesTab = document.getElementById('tab-inquiries');
+      usersTab.classList.toggle('active', tab === 'users');
+      inquiriesTab.classList.toggle('active', tab === 'inquiries');
+      usersTab.classList.toggle('glass', tab !== 'users');
+      inquiriesTab.classList.toggle('glass', tab !== 'inquiries');
+      usersTab.classList.toggle('text-white/70', tab !== 'users');
+      inquiriesTab.classList.toggle('text-white/70', tab !== 'inquiries');
+    }
+
+    // ─── Render ───
+    function renderAll() {
+      const query = (document.getElementById('search-input').value || '').toLowerCase().trim();
+      renderUsers(query);
+      renderInquiries(query);
+    }
+
+    function renderUsers(query) {
+      const list = document.getElementById('users-list');
+      const badge = document.getElementById('users-count-badge');
+
+      const filtered = !query ? allUsers : allUsers.filter(u =>
+        (u.name || '').toLowerCase().includes(query) ||
+        (u.id || '').toLowerCase().includes(query)
+      );
+
+      badge.textContent = `${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'}`;
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="p-12 text-center empty-state">
+            <p class="text-4xl mb-3">👤</p>
+            <p class="text-white/40 text-sm">${allUsers.length === 0 ? 'No users registered yet.' : 'No matches found.'}</p>
+            ${allUsers.length === 0 ? '<a href="index.html" class="inline-block mt-4 text-xs text-cyan-400 underline hover:text-cyan-300">Register the first user →</a>' : ''}
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map((u, i) => `
+        <div class="row-hover px-6 py-4 flex items-center gap-4">
+          <div class="w-11 h-11 rounded-xl flex items-center justify-center flex-shrink-0 text-lg font-bold text-white"
+               style="background: linear-gradient(135deg, hsl(${(i * 47) % 360}, 70%, 55%), hsl(${(i * 47 + 60) % 360}, 70%, 45%))">
+            ${(u.name || '?').charAt(0).toUpperCase()}
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="font-semibold text-sm truncate">${escapeHtml(u.name)}</p>
+            <p class="text-xs text-white/40 mono mt-0.5">${escapeHtml(u.id)}</p>
+          </div>
+          <span class="badge bg-emerald-500/20 text-emerald-300">Registered</span>
+        </div>
+      `).join('');
+    }
+
+    function renderInquiries(query) {
+      const list = document.getElementById('inquiries-list');
+      const badge = document.getElementById('inquiries-count-badge');
+
+      const filtered = !query ? allInquiries : allInquiries.filter(w =>
+        (w.whatsapp || '').toLowerCase().includes(query) ||
+        (w.type || '').toLowerCase().includes(query) ||
+        (w.description || '').toLowerCase().includes(query)
+      );
+
+      badge.textContent = `${filtered.length} ${filtered.length === 1 ? 'entry' : 'entries'}`;
+
+      if (filtered.length === 0) {
+        list.innerHTML = `
+          <div class="p-12 text-center empty-state">
+            <p class="text-4xl mb-3">📩</p>
+            <p class="text-white/40 text-sm">${allInquiries.length === 0 ? 'No inquiries submitted yet.' : 'No matches found.'}</p>
+            ${allInquiries.length === 0 ? '<a href="win.html" class="inline-block mt-4 text-xs text-cyan-400 underline hover:text-cyan-300">Submit the first inquiry →</a>' : ''}
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = filtered.map((w) => {
+        const wa = (w.whatsapp || '').replace(/[^\d+]/g, '');
+        const typeColor = getTypeColor(w.type || '');
+        return `
+          <div class="row-hover px-6 py-4">
+            <div class="flex items-start justify-between gap-3 mb-2">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="badge ${typeColor}">${escapeHtml(w.type || 'Unknown')}</span>
+                <span class="text-xs text-white/40 mono">${escapeHtml(w.whatsapp || '—')}</span>
+              </div>
+              ${wa ? `<a href="https://wa.me/${wa.replace('+', '')}" target="_blank" class="text-xs bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 px-3 py-1 rounded-lg transition">WhatsApp →</a>` : ''}
+            </div>
+            <p class="text-sm text-white/80 leading-relaxed">${escapeHtml(w.description || 'No description.')}</p>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function getTypeColor(type) {
+      if (type.includes('AI Builder')) return 'bg-fuchsia-500/20 text-fuchsia-300';
+      if (type.includes('Web Builder')) return 'bg-amber-500/20 text-amber-300';
+      if (type.includes('AI')) return 'bg-violet-500/20 text-violet-300';
+      if (type.includes('Game')) return 'bg-pink-500/20 text-pink-300';
+      if (type.includes('App')) return 'bg-cyan-500/20 text-cyan-300';
+      return 'bg-blue-500/20 text-blue-300';
+    }
+
+    function escapeHtml(str) {
+      if (str == null) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // ─── Init ───
+    loadAll();
+
+    // Auto-refresh every 30s
+    setInterval(() => {
+      const btn = document.getElementById('refresh-btn');
+      if (!btn.classList.contains('spinning')) loadAll();
+    }, 30000);
+  </script>
+</body>
+</html>
