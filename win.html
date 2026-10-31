@@ -14,7 +14,7 @@
     .blob-1 { width: 550px; height: 550px; background: #7c3aed; top: -180px; right: -120px; }
     .blob-2 { width: 400px; height: 400px; background: #06b6d4; bottom: -100px; left: -100px; animation-delay: -5s; }
     .blob-3 { width: 300px; height: 300px; background: #f59e0b; top: 50%; left: 40%; animation-delay: -9s; opacity: 0.2; }
-    @keyframes float { 0%, 100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-40px, 30px) scale(1.1); } }
+    @keyframes float { 0%,100% { transform: translate(0,0) scale(1); } 50% { transform: translate(-40px,30px) scale(1.1); } }
     .glass { background: rgba(255,255,255,0.04); backdrop-filter: blur(24px); border: 1px solid rgba(255,255,255,0.08); }
     .gradient-text { background: linear-gradient(135deg, #a78bfa, #22d3ee, #f472b6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
     .btn-primary { background: linear-gradient(135deg, #7c3aed, #06b6d4); transition: all 0.3s; }
@@ -24,7 +24,7 @@
     .type-card.selected { border-color: #22d3ee; background: rgba(34,211,238,0.1); box-shadow: 0 0 0 1px #22d3ee; }
     .fade-in { animation: fadeIn 0.6s ease-out; }
     @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-    input:focus, textarea:focus, select:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.15); }
+    input:focus, textarea:focus { outline: none; border-color: #22d3ee; box-shadow: 0 0 0 3px rgba(34,211,238,0.15); }
     .mono { font-family: 'Space Grotesk', monospace; }
   </style>
 </head>
@@ -40,52 +40,69 @@
     </div>
 
     <div class="glass rounded-3xl p-8 md:p-10 shadow-2xl">
-      <h2 class="text-2xl font-semibold brand mb-1">Start Your Project</h2>
-      <p class="text-white/40 text-sm mb-8">Tell us what you need. We'll reach out on WhatsApp.</p>
-
       <div id="form-area" class="space-y-6">
-        <!-- WhatsApp -->
+        <div>
+          <h2 class="text-2xl font-semibold brand mb-1">Start Your Project</h2>
+          <p class="text-white/40 text-sm">Tell us what you need. We'll reach out on WhatsApp.</p>
+        </div>
+
         <div>
           <label class="block text-xs text-white/50 uppercase tracking-widest mb-2">WhatsApp Number</label>
-          <input id="whatsapp" type="tel" placeholder="+91 98765 43210" class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 transition" />
+          <input id="whatsapp" type="tel" placeholder="+91 98765 43210"
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3.5 text-white placeholder-white/20 transition" />
         </div>
 
-        <!-- Type -->
         <div>
           <label class="block text-xs text-white/50 uppercase tracking-widest mb-3">What do you want to build?</label>
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="type-grid">
-            <!-- Populated by JS -->
-          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3" id="type-grid"></div>
         </div>
 
-        <!-- Description -->
         <div>
-          <label class="block text-xs text-white/50 uppercase tracking-widest mb-2">Project Description <span class="text-white/20">(max 50 words)</span></label>
-          <textarea id="description" rows="4" placeholder="Describe your vision..." class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 transition resize-none"></textarea>
+          <label class="block text-xs text-white/50 uppercase tracking-widest mb-2">
+            Project Description <span class="text-white/20">(max 50 words)</span>
+          </label>
+          <textarea id="description" rows="4" placeholder="Describe your vision..."
+            class="w-full bg-white/5 border border-white/10 rounded-xl px-4 py-3 text-white placeholder-white/20 transition resize-none"></textarea>
           <p class="text-right text-xs text-white/30 mt-1"><span id="word-count">0</span> / 50 words</p>
         </div>
 
-        <button onclick="handleSubmit()" class="btn-primary w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide">Submit Inquiry →</button>
+        <button onclick="handleSubmit()" id="submit-btn"
+          class="btn-primary w-full py-3.5 rounded-xl font-semibold text-sm tracking-wide">
+          Submit on GitHub →
+        </button>
+
+        <div id="error-area" class="hidden text-red-400 text-sm text-center"></div>
+
+        <p class="text-white/30 text-xs text-center leading-relaxed">
+          You'll be redirected to GitHub — click the green
+          <b class="text-emerald-400">"Submit new issue"</b> button to complete.
+        </p>
       </div>
 
-      <!-- Success -->
-      <div id="success-area" class="hidden text-center py-8">
+      <div id="success-area" class="hidden text-center py-6">
         <div class="w-16 h-16 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-4">
           <span class="text-3xl">✓</span>
         </div>
-        <h3 class="text-xl font-semibold brand mb-2">Inquiry Received</h3>
-        <p class="text-white/40 text-sm">We'll contact you on WhatsApp shortly.</p>
-        <button onclick="resetForm()" class="mt-6 text-white/30 text-xs underline hover:text-white/60">Submit another</button>
+        <h3 class="text-xl font-semibold brand mb-2">Redirected to GitHub</h3>
+        <p class="text-white/40 text-sm max-w-sm mx-auto leading-relaxed">
+          Please complete your submission in the GitHub tab that just opened.
+          We'll receive your inquiry automatically.
+        </p>
+        <button onclick="openAgain()" class="btn-primary mt-5 px-6 py-2.5 rounded-xl font-semibold text-sm">Open GitHub again</button>
+        <br/>
+        <button onclick="resetForm()" class="mt-4 text-white/30 text-xs underline hover:text-white/60">Submit another</button>
       </div>
-
-      <div id="error-area" class="hidden mt-4 text-red-400 text-sm text-center"></div>
     </div>
   </div>
 
-  <script src="config.js"></script>
   <script>
-    const REPO = CONFIG.repo;
-    const TOKEN = CONFIG.token;
+    // 🔗 Same repo where index.html lives
+    const REPO = 'NEXURA-M/LUMINA';
+
+    // Unicode-safe base64 (aapki pasted file wali technique, but safer)
+    function b64Encode(str) {
+      return btoa(unescape(encodeURIComponent(str)));
+    }
 
     const TYPES = [
       { id: 'web', label: 'Web', icon: '🌐', price: 'Custom Quote' },
@@ -98,7 +115,7 @@
     ];
 
     let selectedType = null;
-    let isProcessing = false;
+    let lastIssueUrl = '';
 
     // Render type cards
     const grid = document.getElementById('type-grid');
@@ -111,8 +128,7 @@
         <div>
           <p class="font-medium text-sm">${t.label}</p>
           <p class="text-white/40 text-xs mt-0.5">${t.price}</p>
-        </div>
-      `;
+        </div>`;
       div.onclick = () => selectType(t.id, div);
       grid.appendChild(div);
     });
@@ -123,7 +139,6 @@
       selectedType = id;
     }
 
-    // Word counter
     const descEl = document.getElementById('description');
     descEl.addEventListener('input', () => {
       const words = descEl.value.trim().split(/\s+/).filter(w => w.length > 0);
@@ -134,66 +149,53 @@
       }
     });
 
-    async function createIssue(title, body) {
-      const res = await fetch(`https://api.github.com/repos/${REPO}/issues`, {
-        method: 'POST',
-        headers: {
-          'Authorization': `token ${TOKEN}`,
-          'Accept': 'application/vnd.github.v3+json',
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ title, body })
-      });
-      if (!res.ok) throw new Error(`GitHub API error: ${res.status}`);
-      return res.json();
+    // 🎯 Build GitHub issue URL with base64 payload (exactly like pasted file)
+    function buildIssueUrl(whatsapp, typeLabel, desc) {
+      const payload = {
+        kind: 'win',
+        whatsapp,
+        type: typeLabel,
+        description: desc,
+        timestamp: new Date().toISOString()
+      };
+      const encodedBody = b64Encode(JSON.stringify(payload));
+      const title = encodeURIComponent(`[WIN] ${whatsapp} — ${typeLabel}`);
+      return `https://github.com/${REPO}/issues/new?title=${title}&body=${encodeURIComponent(encodedBody)}`;
     }
 
-    async function handleSubmit() {
-      if (isProcessing) return;
+    function handleSubmit() {
       const errorEl = document.getElementById('error-area');
       errorEl.classList.add('hidden');
 
       const whatsapp = document.getElementById('whatsapp').value.trim();
       const desc = descEl.value.trim();
 
-      if (!whatsapp || !/^\+?[\d\s-]{7,15}$/.test(whatsapp)) {
-        errorEl.textContent = 'Please enter a valid WhatsApp number.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      if (!selectedType) {
-        errorEl.textContent = 'Please select a project type.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
-      const wordCount = desc.split(/\s+/).filter(w => w.length > 0).length;
-      if (wordCount === 0) {
-        errorEl.textContent = 'Please write a short description.';
-        errorEl.classList.remove('hidden');
-        return;
-      }
+      if (!whatsapp || !/^\+?[\d\s-]{7,15}$/.test(whatsapp))
+        return showError('Please enter a valid WhatsApp number.');
+      if (!selectedType)
+        return showError('Please select a project type.');
+      const words = desc.split(/\s+/).filter(w => w.length > 0);
+      if (words.length === 0)
+        return showError('Please write a short description.');
 
-      isProcessing = true;
-      const btn = document.querySelector('#form-area button');
-      btn.textContent = 'Submitting...';
-      btn.disabled = true;
+      const typeLabel = TYPES.find(t => t.id === selectedType)?.label || selectedType;
+      lastIssueUrl = buildIssueUrl(whatsapp, typeLabel, desc);
 
-      try {
-        const typeLabel = TYPES.find(t => t.id === selectedType)?.label || selectedType;
-        const body = `### Project Inquiry\n- **WhatsApp:** ${whatsapp}\n- **Type:** ${typeLabel}\n- **Description:** ${desc}\n- **Timestamp:** ${new Date().toISOString()}`;
-        await createIssue(`[WIN] ${whatsapp} — ${typeLabel}`, body);
+      // 🚀 Open GitHub — user clicks "Submit new issue"
+      window.open(lastIssueUrl, '_blank');
 
-        document.getElementById('form-area').classList.add('hidden');
-        document.getElementById('success-area').classList.remove('hidden');
-      } catch (e) {
-        errorEl.textContent = 'Something went wrong. Please try again.';
-        errorEl.classList.remove('hidden');
-        console.error(e);
-      } finally {
-        isProcessing = false;
-        btn.textContent = 'Submit Inquiry →';
-        btn.disabled = false;
-      }
+      document.getElementById('form-area').classList.add('hidden');
+      document.getElementById('success-area').classList.remove('hidden');
+    }
+
+    function openAgain() {
+      if (lastIssueUrl) window.open(lastIssueUrl, '_blank');
+    }
+
+    function showError(msg) {
+      const el = document.getElementById('error-area');
+      el.textContent = msg;
+      el.classList.remove('hidden');
     }
 
     function resetForm() {
@@ -203,6 +205,7 @@
       descEl.value = '';
       document.getElementById('word-count').textContent = '0';
       selectedType = null;
+      lastIssueUrl = '';
       document.querySelectorAll('.type-card').forEach(c => c.classList.remove('selected'));
     }
   </script>
